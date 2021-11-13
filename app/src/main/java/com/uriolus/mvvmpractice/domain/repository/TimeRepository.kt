@@ -4,5 +4,5 @@ import kotlinx.coroutines.flow.Flow
 
 
 interface TimeRepository {
-     fun getTimer(): Flow<Long>
+     fun getTick(): Flow<Long>
 }

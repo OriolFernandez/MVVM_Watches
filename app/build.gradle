@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id "de.mannodermaus.android-junit5"
 }
 
 ext {
@@ -9,7 +10,9 @@ ext {
 }
 android {
     compileSdk 31
-
+    buildFeatures {
+        viewBinding = true
+    }
     defaultConfig {
         applicationId "com.uriolus.mvvmpractice"
         minSdk 24
@@ -49,6 +52,8 @@ dependencies {
     // Testing
     testImplementation "io.insert-koin:koin-test:$koin_version"
     testImplementation 'junit:junit:4.+'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.0"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.0"
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }
