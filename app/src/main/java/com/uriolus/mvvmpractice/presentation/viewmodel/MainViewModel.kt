@@ -1,26 +1,30 @@
 package com.uriolus.mvvmpractice.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.uriolus.mvvmpractice.domain.timeutils.Formatter.Companion.formatToSeconds
-import com.uriolus.mvvmpractice.domain.usecase.GetTickUseCase
-import com.uriolus.mvvmpractice.domain.usecase.StartTimerUseCase
-import com.uriolus.mvvmpractice.domain.usecase.StopTimerUseCase
+import androidx.lifecycle.viewModelScope
+import arrow.core.flatMap
+import arrow.core.right
+import com.uriolus.mvvmpractice.domain.model.Watch
+import com.uriolus.mvvmpractice.domain.usecase.*
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 class MainViewModel(
+    private val addWatchUseCase: AddWatchUseCase,
     private val getTickUseCase: GetTickUseCase,
     private val stopTimerUseCase: StopTimerUseCase,
-    private val startTimerUseCase: StartTimerUseCase
+    private val startTimerUseCase: StartTimerUseCase,
+    private val getAllWatchesUseCase: GetAllWatchesUseCase
 ) : ViewModel() {
+    fun getAllWatchesFlow(): Flow<List<Watch>> = getAllWatchesUseCase.exec()
 
-    fun stopTimer1() {
-        stopTimerUseCase.exec()
+    fun addWatch() {
+        viewModelScope.launch {
+            addWatchUseCase.exec()
+                .flatMap {
+                    it.start()
+                    it.right()
+                }
+        }
     }
-
-    fun startTimer1() {
-        startTimerUseCase.exec()
-    }
-
-    val timerTicker: Flow<String> = getTickUseCase.exec().map { it.formatToSeconds() }
 }

@@ -1,9 +1,22 @@
 package com.uriolus.mvvmpractice.domain.model
 
 import android.util.Log
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import java.util.*
 
-class Watch() {
+class Watch private constructor(
+    val id: WatchId,
+    private val timeInterval: Long = 1000,
+    private val speedFactor: Float = 1.0f
+) {
+    companion object {
+        fun newWatch(): Watch {
+            return Watch(WatchId(UUID.randomUUID().toString()))
+        }
+    }
+
     enum class State {
         CREATED,
         RUNNING,
@@ -18,7 +31,7 @@ class Watch() {
     private var lastTimeUpdated: Long? = null
 
     fun start() {
-        onStateChanged(State.RUNNING){
+        onStateChanged(State.RUNNING) {
             started = System.currentTimeMillis()
             lastTimeUpdated = started
             currentTimeAccumulated = 0
@@ -26,19 +39,19 @@ class Watch() {
     }
 
     fun pause() {
-        onStateChanged(State.PAUSED){
+        onStateChanged(State.PAUSED) {
             updateTime()
         }
     }
 
     fun resume() {
-        onStateChanged(State.RUNNING){
+        onStateChanged(State.RUNNING) {
             lastTimeUpdated = System.currentTimeMillis()
         }
     }
 
     fun stop() {
-        onStateChanged(State.ENDED){
+        onStateChanged(State.ENDED) {
             ended = System.currentTimeMillis()
             updateTime()
         }
@@ -65,7 +78,7 @@ class Watch() {
     }
 
     private fun updateTime() {
-        currentTimeAccumulated = System.currentTimeMillis() - (lastTimeUpdated ?: 0)
+        currentTimeAccumulated = ((System.currentTimeMillis() - (lastTimeUpdated ?: 0)) * speedFactor).toLong()
     }
 
     private fun updateState(newState: State): ChangeStateResult {
@@ -97,10 +110,22 @@ class Watch() {
         }
     }
 
-    sealed class ChangeStateResult() {
+    fun getTimeFlow(): Flow<Long> {
+        return flow {
+            while (true) {
+                val time = getTime()
+                emit(time)
+                delay(timeInterval)
+            }
+        }
+    }
+
+    sealed class ChangeStateResult {
         class Correct(val state: State) : ChangeStateResult()
         class NewStateException(val reason: String) : ChangeStateResult()
     }
 }
 
+@JvmInline
+value class WatchId(private val s: String)
 
